@@ -1,13 +1,35 @@
 
 # LEVEL-1B MODULE
 
-from l1b.src.initL1b import initL1b
-from common.io.writeToa import writeToa, readToa
-from common.src.auxFunc import getIndexBand
-from common.io.readFactor import readFactor, EQ_MULT, EQ_ADD, NC_EXT
-import numpy as np
 import os
+import sys
+
+# Eliminamos el directorio actual de sys.path para evitar que l1b.py colisione
+# con el paquete 'l1b' y añadimos la raíz del proyecto
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+
+while current_dir in sys.path:
+    sys.path.remove(current_dir)
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import matplotlib.pyplot as plt
+import numpy as np
+from netCDF4 import Dataset
+
+# Intento de importación dual (como paquete o como módulo local)
+try:
+    from l1b.src.initL1b import initL1b
+    from common.io.writeToa import writeToa, readToa
+    from common.src.auxFunc import getIndexBand
+    from common.io.readFactor import readFactor, EQ_MULT, EQ_ADD, NC_EXT
+except (ModuleNotFoundError, ImportError):
+    from initL1b import initL1b
+    from common.io.writeToa import writeToa, readToa
+    from common.src.auxFunc import getIndexBand
+    from common.io.readFactor import readFactor, EQ_MULT, EQ_ADD, NC_EXT
 
 class l1b(initL1b):
 
@@ -80,3 +102,4 @@ class l1b(initL1b):
     def plotL1bToa(self, toa_l1b, outputdir, band):
         #TODO
         a=1 # dummy
+
