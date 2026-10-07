@@ -14,8 +14,8 @@ from common.src.auxFunc import getIndexBand
 
 class opticalPhase(initIsm):
 
-    def __init__(self, auxdir, indir, outdir):
-        super().__init__(auxdir, indir, outdir)
+    def _init_(self, auxdir, indir, outdir):
+        super()._init_(auxdir, indir, outdir)
 
     def compute(self, sgm_toa, sgm_wv, band):
         """
@@ -59,7 +59,7 @@ class opticalPhase(initIsm):
                                 self.ismConfig.defocus, self.ismConfig.ksmear, self.ismConfig.kmotion,
                                 self.outdir, band)
 
-        # Apply system MTF
+        # Apply system MTF (spatial response of our system)
         toa = self.applySysMtf(toa, Hsys) # always calculated
         self.logger.debug("TOA [0,0] " +str(toa[0,0]) + " [e-]")
 
@@ -92,8 +92,9 @@ class opticalPhase(initIsm):
         :param Tr: Optical transmittance [-]
         :return: TOA image in irradiances [mW/m2]
         """
-
-        toa = Tr*toa*pi/4*(D/f)**2
+        # radiance to irradiance conversion, page 34
+        # I = Tr * L * (pi/4) * (D/f)^2, where toa is the radiance L
+        toa = Tr * toa * (pi / 4) * (D / f) ** 2 # new toa is the irradiance
 
         return toa
 
@@ -104,7 +105,22 @@ class opticalPhase(initIsm):
         :param Hsys: System MTF
         :return: TOA image in irradiances [mW/m2]
         """
-        # TODO
+        # steps from 7.1.3.19.4
+
+        # 1. Convert the TOA to the frequency domain
+        GE = fft2(toa)
+
+        # 2. Shift the system MTF (its "1" is at the centre) so that its zero
+        #    frequency (ξ=0) matches the position of the TOA's FFT (ξ=0 in the corner)
+        Hsys_shifted = fftshift(Hsys)
+
+        # 3. Multiply the TOA (in frequency domain) by the shifted system MTF
+        GE_filtered = GE * Hsys_shifted  # this is a complex number and we need to check that the imaginary part is
+        # quasi negligible. second, keep only the ral part.
+        GE_ifft = ifft2(GE_filtered)
+        # 4. Go back to the spatial domain (take the real part, the rest is numerical noise)
+        toa_ft = np.real(GE_ifft)
+
         return toa_ft
 
     def spectralIntegration(self, sgm_toa, sgm_wv, band):
@@ -115,19 +131,27 @@ class opticalPhase(initIsm):
         :param band: band
         :return: TOA image 2D in radiances [mW/m2]
         """
+        # TODO
 
         isrf, wv_isrf = readIsrf(self.auxdir + '/' + self.ismConfig.isrffile, band)
 
-        toa=np.zeros((sgm_toa.shape[0], sgm_toa.shape[1]))
-
+        # initialize the output
+        toa = np.zeros((sgm_toa.shape[0],sgm_toa.shape[1]))
+        # 1. normalise ISRF
         isrf = isrf/np.sum(isrf)
-
-        wv_isrf = wv_isrf*1000
+        # 2. CONVERT ISRF to nanometers
+        wv_isrf = wv_isrf*1000 # convert to nanometers
+        # 3. creating interpolant of the ISRF
+        #cs = interp1d(wv_isrf, isrf, fill_value=(0,0), bounds_error=False)
+        #interp_isrf = cs(sgm_wv) # 1d vector
+        #for ialt in range(sgm_toa.shape[0]):
+        #    for iact in range(sgm_toa.shape[1]):
+        #        toa[ialt, iact] = np.sum(sgm_toa[ialt, iact] * interp_isrf)
 
         for ialt in range(sgm_toa.shape[0]):
             for iact in range(sgm_toa.shape[1]):
-                cs=interp1d(sgm_wv, sgm_toa[ialt,iact,:], fill_value=(0,0), bounds_error=False)
-                sgm_inter=cs(wv_isrf)
-                toa[ialt,iact]=sum(sgm_inter*isrf)
+                cs = interp1d(sgm_wv, sgm_toa[ialt,iact,:], fill_value=(0,0), bounds_error=False)
+                sgm_inter = cs(wv_isrf)
+                toa[ialt, iact] = np.sum(sgm_inter *isrf)
 
         return toa

@@ -69,7 +69,7 @@ class mtf:
 
         # Calculate the System MTF
         self.logger.debug("Calculation of the Sysmtem MTF by multiplying the different contributors")
-        Hsys = 1 # dummy
+        Hsys = Hdiff * Hdefoc * Hwfe * Hdet * Hsmear * Hmotion  # dummy
 
         # Plot cuts ACT/ALT of the MTF
         self.plotMtf(Hdiff, Hdefoc, Hwfe, Hdet, Hsmear, Hmotion, Hsys, nlines, ncolumns, fnAct, fnAlt, directory, band)
@@ -91,12 +91,11 @@ class mtf:
         :return fnAct: 1D normalised frequencies 2D ACT (f/(1/w))
         :return fnAlt: 1D normalised frequencies 2D ALT (f/(1/w))
         """
-        #TODO
 
         fstepAlt = 1 / nlines / w
         fstepAct = 1 / ncolumns / w
 
-        eps = 1e-8
+        eps = 1e-6
         fAlt = np.arange(-1 / (2 * w), 1 / (2 * w) - eps, fstepAlt)
         fAct = np.arange(-1 / (2 * w), 1 / (2 * w) - eps, fstepAct)
 
@@ -121,7 +120,8 @@ class mtf:
         :param fr2D: 2D relative frequencies (f/fc), where fc is the optics cut-off frequency
         :return: diffraction MTF
         """
-        #TODO
+
+        Hdiff = 2/np.pi * (np.arccos(fr2D) - fr2D * np.sqrt(1 - fr2D**2))
         return Hdiff
 
 
@@ -134,7 +134,9 @@ class mtf:
         :param D: Telescope diameter [m]
         :return: Defocus MTF
         """
-        #TODO
+        x = np.pi * defocus * fr2D * (1 - fr2D)
+        J1 = x / 2 - (x * 3) / 16 + (x5) / 384 - (x * 7) / 18432
+        Hdefoc = (2*J1) / (x)
         return Hdefoc
 
     def mtfWfeAberrations(self, fr2D, lambd, kLF, wLF, kHF, wHF):
@@ -148,7 +150,7 @@ class mtf:
         :param wHF: RMS of high-frequency wavefront errors [m]
         :return: WFE Aberrations MTF
         """
-        #TODO
+        Hwfe = np.exp(-fr2D * (1 - fr2D) * (kLF * (wLF / lambd) ** 2 +  kHF * (wHF / lambd) ** 2))
         return Hwfe
 
     def mtfDetector(self,fn2D):
@@ -157,7 +159,8 @@ class mtf:
         :param fnD: 2D normalised frequencies (f/(1/w))), where w is the pixel width
         :return: detector MTF
         """
-        #TODO
+
+        Hdet = np.abs(np.sin(np.pi*fn2D) / (np.pi*fn2D))
         return Hdet
 
     def mtfSmearing(self, fnAlt, ncolumns, ksmear):
@@ -168,7 +171,11 @@ class mtf:
         :param ksmear: Amplitude of low-frequency component for the motion smear MTF in ALT [pixels]
         :return: Smearing MTF
         """
-        #TODO
+
+        Hsmear = np.zeros((fnAlt.size, ncolumns))
+        for i in range(ncolumns):
+            Hsmear[:, i] = np.sinc(ksmear * fnAlt)
+
         return Hsmear
 
     def mtfMotion(self, fn2D, kmotion):
@@ -178,7 +185,7 @@ class mtf:
         :param kmotion: Amplitude of high-frequency component for the motion smear MTF in ALT and ACT
         :return: detector MTF
         """
-        #TODO
+        Hmotion = np.abs(np.sin(kmotion* np.pi * fn2D) / (kmotion* np.pi * fn2D ))
         return Hmotion
 
     def plotMtf(self,Hdiff, Hdefoc, Hwfe, Hdet, Hsmear, Hmotion, Hsys, nlines, ncolumns, fnAct, fnAlt, directory, band):
@@ -202,3 +209,8 @@ class mtf:
         #TODO
 
 
+        # tenemos que implementarlo luego para replicar una imagen que es simetrica. una imagen que esta en el
+        # documento grande. Figure 7-52 en pg 65. use the fn2D to cut the 100x150 through the 150.
+        # para el report cross validation de sus outputs con los nuestros. validar los mtf. irsf toa and irsf optical.
+        # all out outputs and hers. at the plot of the system mtf and explain what are the dominating effects. the two dimensining
+        # mtf of out system.
