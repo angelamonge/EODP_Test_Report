@@ -66,6 +66,6 @@ class videoChainPhase(initIsm):
         :param max_voltage: maximum voltage
         :return: toa in digital counts
         """
-        conversion_factor_dig = (max_voltage - min_voltage)(2 * bit_depth - 1)
+        conversion_factor_dig = (max_voltage - min_voltage)*(2 * bit_depth - 1)
         toa_dn = np.round(toa / conversion_factor_dig)
         return toa_dn

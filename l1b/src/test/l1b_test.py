@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 
 # File paths
-path_truth = r"C:\Users\jesus\Desktop\MISE\5 SEMICUATRIMESTRE\Earth Observation Data Processing\EODP_TER_2021-20260917T101917Z-1-001\EODP_TER_2021\EODP-TS-L1B\input\ism_toa_isrf_VNIR-0.nc"
-path_l1b_eq = r"C:\Users\jesus\Desktop\MISE\5 SEMICUATRIMESTRE\Earth Observation Data Processing\EODP_TER_2021-20260917T101917Z-1-001\EODP_TER_2021\EODP-TS-L1B\output_eq\l1b_toa_VNIR-0.nc"
-path_l1b_no_eq = r"C:\Users\jesus\Desktop\MISE\5 SEMICUATRIMESTRE\Earth Observation Data Processing\EODP_TER_2021-20260917T101917Z-1-001\EODP_TER_2021\EODP-TS-L1B\output_no_eq\l1b_toa_VNIR-0.nc"
+path_truth = r"C:\\Users\\jesus\\Desktop\\MISE\\5SEMICUATRIMESTRE\\EODP\\EODP_TER_2021-20260917T101917Z-1-001\\EODP_TER_2021\\EODP-TS-L1B\\input\\ism_toa_isrf_VNIR-0.nc"
+path_l1b_eq = r"C:\\Users\\jesus\\Desktop\\MISE\\5SEMICUATRIMESTRE\\EODP\\EODP_TER_2021-20260917T101917Z-1-001\\EODP_TER_2021\\EODP-TS-L1B\\output_eq\\l1b_toa_VNIR-0.nc"
+path_l1b_no_eq = r"C:\\Users\\jesus\\Desktop\\MISE\\5SEMICUATRIMESTRE\\EODP\\EODP_TER_2021-20260917T101917Z-1-001\\EODP_TER_2021\\EODP-TS-L1B\\output_no_eq\\l1b_toa_VNIR-0.nc"
 
-output_dir = r"C:\Users\jesus\Desktop\MISE\5 SEMICUATRIMESTRE\Earth Observation Data Processing\EODP_TER_2021-20260917T101917Z-1-001\EODP_TER_2021\EODP-TS-L1B\output_test"
+output_dir = r"C:\\Users\\jesus\\Desktop\\MISE\\5SEMICUATRIMESTRE\\EODP\\EODP_TER_2021-20260917T101917Z-1-001\\EODP_TER_2021\\EODP-TS-L1B\\output_test"
 os.makedirs(output_dir, exist_ok=True)
 save_fig_path = os.path.join(output_dir, "fig_8_3_equalization_vnir0.png")
 

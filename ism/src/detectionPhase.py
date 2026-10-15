@@ -136,7 +136,8 @@ class detectionPhase(initIsm):
         :param dead_pix_red: Reduction in the quantum efficiency for the dead pixels [-, over 1]
         :return: toa in e- including bad & dead pixels
         """
-        #TODO
+        toa[:,5] = toa[:,5] * (1-bad_pix_red)
+
         return toa
 
     def prnu(self, toa, kprnu):
@@ -149,7 +150,6 @@ class detectionPhase(initIsm):
         :param kprnu: multiplicative factor to the standard normal deviation for the PRNU
         :return: TOA after adding PRNU [e-]
         """
-
 
         prnu = np.random.standard_normal(toa.shape[1])*kprnu
         toa = toa * ( prnu + 1 )

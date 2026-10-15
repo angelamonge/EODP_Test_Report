@@ -4,8 +4,7 @@
 import os
 import sys
 
-# Eliminamos el directorio actual de sys.path para evitar que l1b.py colisione
-# con el paquete 'l1b' y añadimos la raíz del proyecto
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 
@@ -19,7 +18,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from netCDF4 import Dataset
 
-# Intento de importación dual (como paquete o como módulo local)
 try:
     from l1b.src.initL1b import initL1b
     from common.io.writeToa import writeToa, readToa
@@ -84,7 +82,9 @@ class l1b(initL1b):
         :param eq_mult: Gain factor, adimensional
         :return: TOA in DN, equalized
         """
-        #TODO
+
+        toa = (toa-eq_add)/eq_mult
+
         return toa
 
     def restoration(self,toa,gain):
@@ -94,12 +94,35 @@ class l1b(initL1b):
         :param gain: gain in [rad/DN]
         :return: TOA in radiances [mW/sr/m2]
         """
-        #TODO
+
+        toa = toa*gain
         self.logger.debug('Sanity check. TOA in radiances after gain application ' + str(toa[1,-1]) + ' [mW/m2/sr]')
 
         return toa
 
     def plotL1bToa(self, toa_l1b, outputdir, band):
-        #TODO
+
+        toa_profile = toa_l1b[0, :] if len(toa_l1b.shape) > 1 else toa_l1b
+
+        plt.figure(figsize=(20, 10))
+
+        plt.plot(toa_profile, color='red', linewidth=2, label='TOA L1B')
+
+        plt.title(f'Equalization and restoration for {band}', fontsize=20)
+
+        plt.xlabel('ACT pixel [-]', fontsize=16)
+        plt.ylabel('TOA [mW/m2/sr]', fontsize=16)
+
+        plt.grid(True)
+
+        plt.legend(loc='upper right', fontsize=12)
+
+        output_file = os.path.join(outputdir, f'l1b_toa_{band}.png')
+        plt.savefig(output_file, bbox_inches='tight')
+
+        plt.close()
+
+        self.logger.debug(f'Plot saved at: {output_file}')
+
         a=1 # dummy
 
